@@ -1,0 +1,8 @@
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Debug/
+Project.build/
+Project.xcodeproj/
+cmake_install.cmake
+testvolume/
