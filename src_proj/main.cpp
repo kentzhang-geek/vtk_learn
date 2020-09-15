@@ -14,6 +14,7 @@
 #include <vtkDataArray.h>
 #include <vtkGLTFExporter.h>
 #include <vtkImageData.h>
+#include <vtkCommand.h>
 
 #define vtkSPtr vtkSmartPointer
 #define vtkSPtrNew(Var, Type) vtkSPtr<Type> Var = vtkSPtr<Type>::New();
