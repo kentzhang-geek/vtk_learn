@@ -15,6 +15,8 @@
 #include <vtkGLTFExporter.h>
 #include <vtkImageData.h>
 #include <vtkCommand.h>
+#include <vtkCamera.h>
+#include <vtkProperty.h>
 
 #define vtkSPtr vtkSmartPointer
 #define vtkSPtrNew(Var, Type) vtkSPtr<Type> Var = vtkSPtr<Type>::New();
@@ -26,6 +28,19 @@ VTK_MODULE_INIT(vtkRenderingOpenGL2);
 
 using namespace std;
 
+class TestCommand : public vtkCommand {
+    void Execute(vtkObject *caller, unsigned long eventId, void *callData) override {
+        vtkRenderer * ren = vtkRenderer::SafeDownCast(caller);
+        if (ren) {
+            std::cout << ren->GetActiveCamera()->GetPosition()[0] << " ";
+            std::cout << ren->GetActiveCamera()->GetPosition()[1] << " ";
+            std::cout << ren->GetActiveCamera()->GetPosition()[2] << std::endl;
+            std::flush(std::cout);
+        }
+    }
+    
+};
+
 int main()
 {
     // cylinder
@@ -33,12 +48,14 @@ int main()
     vtkSmartPointer<vtkPolyDataMapper> cylinderMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     cylinderMapper->SetInputConnection(cylinder->GetOutputPort());
     cylinder->SetResolution(24);
-    vtkSmartPointer<vtkGLTFExporter> gltfexporter = vtkGLTFExporter::New();
-    gltfexporter->SetFileName("test.gltf");
     // piechart
     vtkSmartPointer<vtkPieChartActor> pie = vtkPieChartActor::New();
     vtkSmartPointer<vtkActor> actor = vtkActor::New();
     actor->SetMapper(cylinderMapper);
+    actor->GetProperty()->SetInterpolationToPBR();
+    actor->GetProperty()->SetRoughness(0.2);
+    actor->GetProperty()->SetMetallic(0.5);
+    actor->GetProperty()->SetColor(1, 0.4, 0.2);
     vtkSmartPointer<vtkRenderer> render = vtkRenderer::New();
     render->AddActor(actor);
     vtkSmartPointer<vtkRenderWindow> win = vtkRenderWindow::New();
@@ -47,8 +64,13 @@ int main()
     win->SetInteractor(inter);
     win->Render();
     win->SetSize(800, 600);
-    gltfexporter->SetInput(win);
-    gltfexporter->Update();
+    TestCommand * tm = new TestCommand;
+    render->AddObserver(vtkCommand::StartEvent, tm);
+//    render->AddObserver(vtkCommand::StartRotateEvent, tm);
+//    actor->AddObserver(vtkCommand::StartRotateEvent, tm);
+//    inter->AddObserver(vtkCommand::StartRotateEvent, tm);
+//    cylinder->AddObserver(vtkCommand::StartRotateEvent, tm);
+//    cylinderMapper->AddObserver(vtkCommand::StartRotateEvent, tm);
     inter->Start();
     return 0;
 }
